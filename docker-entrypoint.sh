@@ -56,6 +56,16 @@ if [ -z "$(ls -A "$PGDATA")" ]; then
     gosu postgres pg_ctl -D "$PGDATA" -m fast -w stop
 
     { echo; echo "host all all 0.0.0.0/0 $authMethod"; } >> "$PGDATA"/pg_hba.conf
+
+    # record commit time of transactions
+    sed -ri "s/^#(track_commit_timestamp\s*=\s*)\S+/\1on/" "$PGDATA"/postgresql.conf
+
+    # set system timezone
+    [[ -z "$TZ" && -f /etc/timezone ]] && TZ=$(cat /etc/timezone)
+    if [[ -n "$TZ" ]]; then
+        sed -ri "s|^(timezone\s*=\s*)\S+|\1'${TZ}'|" "$PGDATA"/postgresql.conf
+        sed -ri "s|^(log_timezone\s*=\s*)\S+|\1'${TZ}'|" "$PGDATA"/postgresql.conf
+    fi
 fi
 
 exec gosu postgres "$@"

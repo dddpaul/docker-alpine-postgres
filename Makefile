@@ -1,8 +1,15 @@
+.PHONY: all build release
+
+all: build
+
 build:
-	docker build -t alpine-postgres --rm=true .
+	@docker build -t dddpaul/postgres .
 
 debug:
-	docker run -i -t --entrypoint=sh alpine-postgres
+	@docker run -i -t --entrypoint=sh dddpaul/postgres
 
 run:
-	docker run -i -P alpine-postgres
+	@docker run -i -P dddpaul/postgres
+
+release: build
+	@docker build --tag=dddpaul/postgres:$(shell cat VERSION) .
